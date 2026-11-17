@@ -39,6 +39,13 @@ dateSpanIn('04.12.2026'); // { start: '2026-12-04', end: '2026-12-04' }
 dateSpanIn('2026-12-05'); // { start: '2026-12-05', end: '2026-12-05' }
 dateSpanIn('5 i 6 grudnia'); // null, a missing year is never guessed
 
+const today = { today: '2026-11-18' };
+
+dateSpanIn('5 i 6 grudnia', today); // { start: '2026-12-05', end: '2026-12-06' }
+dateSpanIn('17 listopada', today); // { start: '2027-11-17', end: '2027-11-17' }, the next time it comes
+dateSpanIn('17 listopada br.', today); // { start: '2026-11-17', end: '2026-11-17' }
+dateSpanIn('30.12–2.01', today); // { start: '2026-12-30', end: '2027-01-02' }
+
 new RegExp(`(\\d{1,2})\\s+(${MONTH_PATTERN})\\s+(\\d{4})`, 'i');
 ```
 
@@ -52,7 +59,7 @@ new RegExp(`(\\d{1,2})\\s+(${MONTH_PATTERN})\\s+(\\d{4})`, 'i');
   - one day in words (`9 listopada 2026 r.`), in digits (`4.12.2026`, `04/12/2026`, `5.12.26`, where two digits of a year mean 20xx) or as ISO (`2026-12-05`);
   - a month in Roman numerals (`5 XII 2026`, `23–27 XI 2026`).
 
-  A date without a year is not read, and neither is a range that runs backwards or a day that does not exist. A comma list cannot be told from other text, so `Sala 3, 5 grudnia 2026` reads as `3–5 grudnia`.
+  A range that runs backwards or a day that does not exist is not read. A date without a year is read only when `today` is given as `YYYY-MM-DD` in the second argument `{ today }`, and then it is the next time the date comes (today counts, and a range that is still on counts), skipping to a year that has the day for `29 lutego`. A range across the new year runs into the next year (`30.12–2.01`). The words after the date set the year instead: `br.`, `w tym roku` and `bieżącego roku` for this year, `w przyszłym roku` and `przyszłego roku` for the next, `w zeszłym roku` and `w ubiegłym roku` for the last. A day and a month in digits (`5.12`, `23-27.11`) are read this way too, unless they follow `godz.` or stand before `zł` and the like. A comma list cannot be told from other text, so `Sala 3, 5 grudnia 2026` reads as `3–5 grudnia`.
 
 - **`clockAfterHour(text)`** reads the time after `godz.`, `godzina` or `godzinie` (`godz. 17`, `godz. 17.30`) as `[hour, minute]`, or `null`.
 - **`clocksIn(text)`** gives every `H.MM` or `HH:MM` as `[hour, minute]`, in order, and skips what is not a time of day.
