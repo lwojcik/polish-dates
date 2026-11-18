@@ -1,5 +1,9 @@
 # polish-dates
 
+![NPM Version](https://img.shields.io/npm/v/polish-dates)
+[![Build status](https://ci.appveyor.com/api/projects/status/s8sgan0csn6yk5bw/branch/main?svg=true)](https://ci.appveyor.com/project/lwojcik/polish-dates/branch/main)
+[![codecov](https://codecov.io/github/lwojcik/polish-dates/graph/badge.svg?token=4bpiOiXmBK)](https://codecov.io/github/lwojcik/polish-dates)
+
 Read dates and clock times written in Polish text, such as `5 i 6 grudnia 2026`, `23–27 listopada 2026`, `17,07.2026` or `godz. 17.30`. It has no dependencies and runs on Node 24 or newer.
 
 ## Install
