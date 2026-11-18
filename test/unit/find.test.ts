@@ -85,3 +85,25 @@ describe('findClocks', () => {
     ]);
   });
 });
+
+describe('a date after a clock and do', () => {
+  it('finds the date after a clock', () => {
+    expect(findDates('od 11:00 do 30.08.2026')).toMatchObject([
+      { start: '2026-08-30', end: '2026-08-30' },
+    ]);
+    expect(
+      findDates('godz. 11:00 do 30.08.2026', { tolerant: true }),
+    ).toMatchObject([{ start: '2026-08-30', end: '2026-08-30' }]);
+  });
+
+  it('finds both dates around clocks', () => {
+    expect(
+      findDates('28.08.2026 od godz. 11:00 do 30.08.2026 do godz. 15:00', {
+        tolerant: true,
+      }),
+    ).toMatchObject([
+      { start: '2026-08-28', end: '2026-08-28' },
+      { start: '2026-08-30', end: '2026-08-30' },
+    ]);
+  });
+});
