@@ -21,9 +21,6 @@ const AFTER_MONTH = new RegExp(
   'gi',
 );
 
-export const monthIndex = (word: string) =>
-  FOLDED_MONTHS.indexOf(fold(word)) + 1;
-
 const isNear = (word: string, month: string) => {
   const prefix = [...word].findIndex(
     (letter, index) => letter !== month[index],

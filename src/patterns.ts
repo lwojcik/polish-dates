@@ -1,6 +1,12 @@
 /* eslint-disable security/detect-non-literal-regexp -- the patterns are built from this package's own table of month names */
 
 import { NOT_AFTER_MONEY, NOT_MONEY } from '@polish/money';
+import {
+  ABBREVIATION,
+  ANY_MONTH,
+  GENITIVE_OR_ABBREVIATION,
+  NOMINATIVE_OR_LOCATIVE,
+} from '@polish/month-forms';
 import { MONTH_PATTERN } from '@polish/months';
 import { compile, DOT } from '@polish/pattern';
 import { WEEKDAY_WORD } from '@polish/weekdays';
@@ -29,7 +35,7 @@ export const NUMBER = String.raw`\d{1,2}(?!\d)`;
 export const WORD_YEAR = String.raw`\d{4}(?!\d)`;
 export const NUMERIC_YEAR = String.raw`(?:\d{4}|\d{2})(?!\d)`;
 export const ROMAN_MONTH = `${ROMAN.slice(1).toReversed().join('|')}|(?-i:I)`;
-export const MONTH = `(?:${MONTH_PATTERN}|${ROMAN_MONTH})`;
+export const MONTH = `(?:${MONTH_PATTERN}|${ABBREVIATION}|${ROMAN_MONTH})`;
 export const RANGE = String.raw`(?:\s*-\s*|\s+do\s+)`;
 export const LIST = String.raw`(?:\s*-\s*|\s+do\s+|\s*,\s*|\s+i\s+)`;
 
@@ -91,3 +97,27 @@ export const NUMERIC_DASHED = compile(
 export const ISO = compile(
   String.raw`(?<lead>${LEAD})(?<![\d-])(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})(?!\d)`,
 );
+
+const NOT_MID_WORD = String.raw`(?<![a-ząćęłńóśźż])(?<!\d[.\s]*)`;
+const MONTHS_LINK = String.raw`(?:\s*-\s*|\s+do\s+|\s+i\s+)`;
+const HALF = String.raw`(?<half>(?-i:II|I)|pierwsz(?:a|ej|ą)|drug(?:a|iej|ą))\s+połow(?:a|ie|y|ę|ą)`;
+const PART =
+  '(?<part>początek|początku|początkiem|koniec|końca|końcu|końcem|środek|środka|środku|połowa|połowie|połowy)';
+const PART_OF = String.raw`(?<![a-ząćęłńóśźż])(?:${HALF}|${PART})\s+(?<m>${GENITIVE_OR_ABBREVIATION})`;
+
+export const WHOLE_MONTH = compile(
+  String.raw`${NOT_MID_WORD}(?<m>${ANY_MONTH})\s+(?<y>${WORD_YEAR})`,
+);
+export const MONTHS_ACROSS = compile(
+  String.raw`${NOT_MID_WORD}(?<m1>${ANY_MONTH})(?:\s+(?<y1>${WORD_YEAR}))?${MONTHS_LINK}(?<m2>${ANY_MONTH})\s+(?<y2>${WORD_YEAR})`,
+);
+export const PART_OF_MONTH = compile(
+  String.raw`${PART_OF}\s+(?<y>${WORD_YEAR})`,
+);
+export const WHOLE_MONTH_UNDATED = compile(
+  `${NOT_MID_WORD}(?<m>${NOMINATIVE_OR_LOCATIVE})${RELATIVE}`,
+);
+export const MONTHS_ACROSS_UNDATED = compile(
+  `${NOT_MID_WORD}(?<m1>${ANY_MONTH})${MONTHS_LINK}(?<m2>${ANY_MONTH})${RELATIVE}`,
+);
+export const PART_OF_MONTH_UNDATED = compile(`${PART_OF}${RELATIVE}`);

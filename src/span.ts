@@ -5,6 +5,8 @@ import { choose, type Pattern } from '@polish/pattern';
 import {
   AFTER_HOUR,
   ISO,
+  MONTHS_ACROSS,
+  MONTHS_ACROSS_UNDATED,
   NEXT_YEAR,
   NUMERIC,
   NUMERIC_ACROSS,
@@ -13,18 +15,36 @@ import {
   NUMERIC_DAYS,
   NUMERIC_DAYS_UNDATED,
   NUMERIC_UNDATED,
-  ROMAN,
+  PART_OF_MONTH,
+  PART_OF_MONTH_UNDATED,
   SHIFTS,
   TODAY,
+  WHOLE_MONTH,
+  WHOLE_MONTH_UNDATED,
   WORD_ACROSS,
   WORD_ACROSS_UNDATED,
   WORD_DAYS,
   WORD_DAYS_UNDATED,
 } from '@polish/patterns';
 import { relativeSpanIn } from '@polish/relative';
-import { monthIndex, tidy } from '@polish/tolerance';
+import {
+  type Build,
+  type Groups,
+  monthOf,
+  spanOf,
+  yearOf,
+} from '@polish/spans';
+import { tidy } from '@polish/tolerance';
 import type { DateSpan } from '@polish/types';
 import { dayOfWeek, weekdaysIn } from '@polish/weekdays';
+import {
+  monthsAcrossIn,
+  partIn,
+  readMonths,
+  readPart,
+  readWhole,
+  wholeIn,
+} from '@polish/whole-month';
 
 export type { DateSpan } from '@polish/types';
 
@@ -33,40 +53,12 @@ export interface DateSpanOptions {
   tolerant?: boolean;
 }
 
-type Groups = Record<string, string | undefined>;
-type Build = (year: number) => DateSpan | null;
-
 interface Today {
   iso: string;
   year: number;
 }
 
 const SEARCH_YEARS = 9;
-const CENTURY = 2000;
-
-const monthOf = (word = '') => {
-  if (/^\d+$/.test(word)) {
-    return Number(word);
-  }
-
-  return monthIndex(word) || ROMAN.indexOf(word.toUpperCase()) + 1;
-};
-
-const yearOf = (year = '') =>
-  year.length === 2 ? CENTURY + Number(year) : Number(year);
-
-const spanOf = (dates: (string | null)[]): DateSpan | null => {
-  const valid = dates.filter((date): date is string => date !== null);
-  const [start] = valid;
-  const end = valid.at(-1);
-  const isOrdered = valid.every(
-    (date, index) => date >= (valid[index - 1] ?? date),
-  );
-
-  return valid.length === dates.length && isOrdered && start && end
-    ? { start, end }
-    : null;
-};
 
 const weekdaysOf = ({ lead, mid, days }: Groups) =>
   weekdaysIn([lead, mid, days].join(' '));
@@ -140,6 +132,9 @@ const READERS = [
   { pattern: NUMERIC, read: readOne },
   { pattern: ISO, read: readOne },
   { pattern: NUMERIC_DASHED, read: readOne, isTolerantOnly: true },
+  { pattern: MONTHS_ACROSS, read: readMonths },
+  { pattern: PART_OF_MONTH, read: readPart },
+  { pattern: WHOLE_MONTH, read: readWhole },
 ];
 
 const UNDATED = [
@@ -148,6 +143,9 @@ const UNDATED = [
   { pattern: NUMERIC_ACROSS_UNDATED, build: acrossIn },
   { pattern: NUMERIC_DAYS_UNDATED, build: daysIn },
   { pattern: NUMERIC_UNDATED, build: oneIn },
+  { pattern: MONTHS_ACROSS_UNDATED, build: monthsAcrossIn },
+  { pattern: PART_OF_MONTH_UNDATED, build: partIn },
+  { pattern: WHOLE_MONTH_UNDATED, build: wholeIn },
 ];
 
 const firstOf = <Reader extends { pattern: Pattern; isTolerantOnly?: boolean }>(
