@@ -1,5 +1,6 @@
 /* eslint-disable security/detect-non-literal-regexp -- the patterns are built from this package's own table of month names */
 
+import { DASHES } from '@polish/dashes';
 import { fold } from '@polish/fold';
 import { MONTH_PATTERN, POLISH_MONTHS } from '@polish/months';
 import { loosen } from '@polish/pattern';
@@ -47,9 +48,78 @@ const correct = (word: string) => {
   return near.length === 1 ? only : word;
 };
 
-export const tidy = (text: string) =>
-  text
-    .normalize('NFC')
-    .replaceAll(WORD_AFTER_NUMBER, (word) => correct(word))
-    .replaceAll(BEFORE_MONTH, (match, digit: string) => `${digit} `)
-    .replaceAll(AFTER_MONTH, (match, month: string) => `${month} `);
+interface Unit {
+  char: string;
+  at: number;
+}
+
+export interface Tidied {
+  text: string;
+  originalAt: (offset: number) => number;
+}
+
+interface Rewrite {
+  pattern: RegExp;
+  replace: (match: RegExpExecArray) => string;
+}
+
+// eslint-disable-next-line security/detect-unsafe-regex -- a letter and the marks that follow it, on a short sentence
+const COMBINED = /.[\u{300}-\u{36F}]*/gsu;
+
+const textOf = (units: Unit[]) => units.map(({ char }) => char).join('');
+
+const rewrite = (units: Unit[], { pattern, replace }: Rewrite) => {
+  const matches = textOf(units).matchAll(pattern).toArray();
+  const starts = new Map(matches.map((match) => [match.index, match]));
+  const isCovered = (offset: number) =>
+    matches.some(
+      ({ index, 0: whole }) => offset >= index && offset < index + whole.length,
+    );
+
+  return units.flatMap((unit, offset) => {
+    const match = starts.get(offset);
+
+    if (match) {
+      return replace(match)
+        .split('')
+        .map((char) => ({ char, at: unit.at }));
+    }
+
+    return isCovered(offset) ? [] : [unit];
+  });
+};
+
+const REWRITES: Rewrite[] = [
+  { pattern: WORD_AFTER_NUMBER, replace: ([word]) => correct(word) },
+  { pattern: BEFORE_MONTH, replace: ([, digit]) => `${digit} ` },
+  { pattern: AFTER_MONTH, replace: ([, month]) => `${month} ` },
+];
+
+const applyAll = ([first, ...others]: Rewrite[], units: Unit[]): Unit[] =>
+  first ? applyAll(others, rewrite(units, first)) : units;
+
+export const tidyWithOffsets = (text: string): Tidied => {
+  const letters = text
+    .matchAll(COMBINED)
+    .flatMap(({ 0: cluster, index }) =>
+      cluster
+        .normalize('NFC')
+        .split('')
+        .map((char) => ({ char, at: index })),
+    )
+    .toArray();
+  const units = applyAll(REWRITES, letters);
+
+  return {
+    text: textOf(units),
+    originalAt: (offset) => units[offset]?.at ?? text.length,
+  };
+};
+
+export const plainOf = (text: string, isTolerant: boolean): Tidied => {
+  const { text: tidied, originalAt } = isTolerant
+    ? tidyWithOffsets(text)
+    : { text, originalAt: (offset: number) => offset };
+
+  return { text: tidied.replaceAll(DASHES, '-'), originalAt };
+};

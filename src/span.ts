@@ -1,4 +1,3 @@
-import { DASHES } from '@polish/dashes';
 import { dateOn } from '@polish/date';
 import { fold } from '@polish/fold';
 import { choose, type Pattern } from '@polish/pattern';
@@ -26,7 +25,7 @@ import {
   WORD_DAYS,
   WORD_DAYS_UNDATED,
 } from '@polish/patterns';
-import { relativeSpanIn } from '@polish/relative';
+import { relativeMatchIn } from '@polish/relative';
 import {
   type Build,
   type Groups,
@@ -34,7 +33,7 @@ import {
   spanOf,
   yearOf,
 } from '@polish/spans';
-import { tidy } from '@polish/tolerance';
+import { plainOf } from '@polish/tolerance';
 import type { DateSpan } from '@polish/types';
 import { dayOfWeek, weekdaysIn } from '@polish/weekdays';
 import {
@@ -53,7 +52,7 @@ export interface DateSpanOptions {
   tolerant?: boolean;
 }
 
-interface Today {
+export interface Today {
   iso: string;
   year: number;
 }
@@ -159,13 +158,19 @@ const firstOf = <Reader extends { pattern: Pattern; isTolerantOnly?: boolean }>(
     ({ pattern, isTolerantOnly }) =>
       (isTolerant || !isTolerantOnly) && choose(pattern, isTolerant).test(text),
   );
-  const groups =
-    reader && choose(reader.pattern, isTolerant).exec(text)?.groups;
+  const found = reader && choose(reader.pattern, isTolerant).exec(text);
 
-  return reader && groups ? { reader, groups } : undefined;
+  return reader && found?.groups
+    ? {
+        reader,
+        groups: found.groups,
+        index: found.index,
+        length: found[0].length,
+      }
+    : undefined;
 };
 
-const todayOf = (today = ''): Today | null => {
+export const todayOf = (today = ''): Today | null => {
   const [, year, month, day] = TODAY.exec(today) ?? [];
   const iso = dateOn({
     year: Number(year),
@@ -192,35 +197,55 @@ const resolve = (
           span && span.end >= today.iso && isFitting(weekdaysOf(groups), span),
       ) ?? null);
 
+export interface Found {
+  span: DateSpan | null;
+  index: number;
+  length: number;
+}
+
+const blankedHours = (text: string) =>
+  text.replaceAll(AFTER_HOUR, (hour) => ' '.repeat(hour.length));
+
+export const firstIn = (
+  plain: string,
+  { now, isTolerant }: { now: Today | null; isTolerant: boolean },
+): Found | undefined => {
+  const dated = firstOf(READERS, { text: plain, isTolerant });
+
+  if (dated) {
+    return {
+      span: dated.reader.read(dated.groups),
+      index: dated.index,
+      length: dated.length,
+    };
+  }
+
+  if (!now) {
+    return undefined;
+  }
+
+  const undated = firstOf(UNDATED, { text: blankedHours(plain), isTolerant });
+
+  return undated
+    ? {
+        span: resolve(
+          {
+            build: undated.reader.build(undated.groups),
+            groups: undated.groups,
+          },
+          now,
+        ),
+        index: undated.index,
+        length: undated.length,
+      }
+    : relativeMatchIn(plain, { today: now.iso, isTolerant });
+};
+
 export const dateSpanIn = (
   text: string,
   { today, tolerant = false }: DateSpanOptions = {},
-): DateSpan | null => {
-  const plain = (tolerant ? tidy(text) : text).replaceAll(DASHES, '-');
-  const dated = firstOf(READERS, { text: plain, isTolerant: tolerant });
-
-  if (dated) {
-    return dated.reader.read(dated.groups);
-  }
-
-  const now = todayOf(today);
-
-  if (!now) {
-    return null;
-  }
-
-  const undated = firstOf(UNDATED, {
-    text: plain.replaceAll(AFTER_HOUR, ' '),
+): DateSpan | null =>
+  firstIn(plainOf(text, tolerant).text, {
+    now: todayOf(today),
     isTolerant: tolerant,
-  });
-
-  return undated
-    ? resolve(
-        {
-          build: undated.reader.build(undated.groups),
-          groups: undated.groups,
-        },
-        now,
-      )
-    : relativeSpanIn(plain, { today: now.iso, isTolerant: tolerant });
-};
+  })?.span ?? null;

@@ -152,15 +152,20 @@ function offsetOf({ count, unit = '' }: Groups) {
   return number * (/^t/i.test(unit) ? DAYS_PER_WEEK : 1);
 }
 
-export const relativeSpanIn = (
+export const relativeMatchIn = (
   text: string,
   { today, isTolerant }: { today: string; isTolerant: boolean },
-): DateSpan | null => {
+): { span: DateSpan | null; index: number; length: number } | undefined => {
   const reader = READERS.find(({ pattern }) =>
     choose(pattern, isTolerant).test(text),
   );
-  const groups =
-    reader && choose(reader.pattern, isTolerant).exec(text)?.groups;
+  const found = reader && choose(reader.pattern, isTolerant).exec(text);
 
-  return reader && groups ? reader.read(groups, today) : null;
+  return reader && found?.groups
+    ? {
+        span: reader.read(found.groups, today),
+        index: found.index,
+        length: found[0].length,
+      }
+    : undefined;
 };
