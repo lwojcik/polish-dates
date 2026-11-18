@@ -5,7 +5,6 @@ import { MONTH_PATTERN, POLISH_MONTHS } from '@polish/months';
 import { loosen } from '@polish/pattern';
 
 const LETTER = 'a-ząćęłńóśźż';
-const FOLDED_MONTHS = POLISH_MONTHS.map(fold);
 const MONTHS = loosen(MONTH_PATTERN);
 const MIN_TYPO_LENGTH = 5;
 const WORD_AFTER_NUMBER = new RegExp(
@@ -42,13 +41,10 @@ const isNear = (word: string, month: string) => {
 
 const correct = (word: string) => {
   const folded = fold(word);
-  const exact = FOLDED_MONTHS.indexOf(folded);
-  const near = FOLDED_MONTHS.keys()
-    .filter((position) => isNear(folded, FOLDED_MONTHS[position] ?? ''))
-    .toArray();
-  const index = exact === -1 && near.length === 1 ? near[0] : exact;
+  const near = POLISH_MONTHS.filter((month) => isNear(folded, fold(month)));
+  const [only = word] = near;
 
-  return POLISH_MONTHS[index] ?? word;
+  return near.length === 1 ? only : word;
 };
 
 export const tidy = (text: string) =>

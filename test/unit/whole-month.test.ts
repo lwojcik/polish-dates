@@ -132,6 +132,13 @@ describe('a whole month', () => {
       expect(dateSpanIn(text)).toEqual({ start, end });
     });
 
+    it('reads a range that stays in a year', () => {
+      expect(dateSpanIn('od lutego do maja', today)).toEqual({
+        start: '2027-02-01',
+        end: '2027-05-31',
+      });
+    });
+
     it('runs into the next year', () => {
       expect(dateSpanIn('od listopada do stycznia', today)).toEqual({
         start: '2026-11-01',

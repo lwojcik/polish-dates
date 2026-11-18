@@ -53,8 +53,12 @@ const WHICH =
   '(?:ten|tym|tę|tą|najbliższ(?:y|ym|ą)|przyszł(?:y|ym|ą)|następn(?:y|ym|ą)|zeszł(?:y|ym|ą)|ubiegł(?:y|ym|ą)|poprzedni(?:m)?)';
 const SEPARATOR = String.raw`(?:\s+do\s+|\s+i\s+|\s*-\s*)`;
 
-const valueOf = (table: Record<string, number>, word: string) =>
-  Object.entries(table).find(([key]) => fold(key) === fold(word))?.[1];
+const valueOf = (
+  table: Record<string, number>,
+  { word, fallback }: { word: string; fallback: number },
+) =>
+  Object.entries(table).find(([key]) => fold(key) === fold(word))?.[1] ??
+  fallback;
 
 const one = (date: string): DateSpan => ({ start: date, end: date });
 
@@ -136,12 +140,14 @@ const READERS: Reader[] = [
       `${WORD_START}(?<word>${Object.keys(DAY_WORDS).join('|')})${WORD_END}`,
     ),
     read: ({ word = '' }, today) =>
-      one(addDays(today, valueOf(DAY_WORDS, word) ?? 0)),
+      one(addDays(today, valueOf(DAY_WORDS, { word, fallback: 0 }))),
   },
 ];
 
 function offsetOf({ count, unit = '' }: Groups) {
-  const number = count ? (valueOf(NUMBER_WORDS, count) ?? Number(count)) : 1;
+  const number = count
+    ? valueOf(NUMBER_WORDS, { word: count, fallback: Number(count) })
+    : 1;
 
   return number * (/^t/i.test(unit) ? DAYS_PER_WEEK : 1);
 }

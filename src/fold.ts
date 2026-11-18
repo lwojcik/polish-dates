@@ -1,10 +1,6 @@
-const ACCENTED = 'ąćęłńóśźż';
-const PLAIN = 'acelnoszz';
-
-export const fold = (text: string) =>
+export const fold = (text = '') =>
   text
     .toLowerCase()
-    .replaceAll(
-      /[óąćęłńśźż]/g,
-      (letter) => PLAIN[ACCENTED.indexOf(letter)] ?? letter,
-    );
+    .normalize('NFD')
+    .replaceAll(/\p{M}/gu, '')
+    .replaceAll('ł', 'l');

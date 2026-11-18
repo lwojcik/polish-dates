@@ -22,7 +22,7 @@ const PARTS: [RegExp, number, number | null][] = [
 ];
 
 const lastDayOf = (year: number, month: number) =>
-  LAST_DAYS.find((day) => dateOn({ year, month, day }) !== null) ?? 0;
+  Math.max(0, ...LAST_DAYS.filter((day) => dateOn({ year, month, day })));
 
 const endOf = (year: number, month: number) =>
   dateOn({ year, month, day: lastDayOf(year, month) });
@@ -42,17 +42,16 @@ export const partIn =
   (groups: Groups): Build =>
   (year) => {
     const month = monthOf(groups.m);
-    const word = fold(groups.half ?? groups.part ?? '');
-    const found = PARTS.find(([pattern]) => pattern.test(word));
+    const word = fold(groups.half ?? groups.part);
+    /* eslint-disable-next-line unicorn/prefer-array-find -- the destructuring has a default and no branch that cannot run */
+    const [[, from = 1, to = null] = []] = PARTS.filter(([pattern]) =>
+      pattern.test(word),
+    );
 
-    return found
-      ? spanOf([
-          dateOn({ year, month, day: found[1] }),
-          found[2] === null
-            ? endOf(year, month)
-            : dateOn({ year, month, day: found[2] }),
-        ])
-      : null;
+    return spanOf([
+      dateOn({ year, month, day: from }),
+      to === null ? endOf(year, month) : dateOn({ year, month, day: to }),
+    ]);
   };
 
 export const monthsAcrossIn =

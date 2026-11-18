@@ -388,6 +388,7 @@ describe('dateSpanIn', () => {
       ['w ten piątek', '2026-11-20'],
       ['w czwartek', '2026-11-19'],
       ['w niedzielę', '2026-11-22'],
+      ['w środę', '2026-11-25'],
       ['w poniedziałek', '2026-11-23'],
       ['w przyszły piątek', '2026-11-27'],
       ['w zeszły piątek', '2026-11-13'],

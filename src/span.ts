@@ -60,6 +60,9 @@ interface Today {
 
 const SEARCH_YEARS = 9;
 
+const digitsIn = (text = '') =>
+  Array.from(text.matchAll(/\d+/g), ([digits]) => digits);
+
 const weekdaysOf = ({ lead, mid, days }: Groups) =>
   weekdaysIn([lead, mid, days].join(' '));
 
@@ -92,7 +95,7 @@ const daysIn =
   (groups: Groups): Build =>
   (year) =>
     spanOf(
-      (groups.days?.match(/\d+/g) ?? []).map((day) =>
+      digitsIn(groups.days).map((day) =>
         dateOn({ year, month: monthOf(groups.m), day: Number(day) }),
       ),
     );
