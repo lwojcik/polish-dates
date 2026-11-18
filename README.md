@@ -46,9 +46,12 @@ import {
   clocksIn,
   dateOn,
   dateSpanIn,
+  findClocks,
+  findDates,
   MONTH_PATTERN,
   monthNumber,
   parseDate,
+  withoutDates,
 } from 'polish-dates';
 
 monthNumber('listopada'); // 11
@@ -113,6 +116,20 @@ new RegExp(`(\\d{1,2})\\s+(${MONTH_PATTERN})\\s+(\\d{4})`, 'i');
 
 - **`clockAfterHour(text)`** reads the time after `godz.`, `godzina` or `godzinie` (`godz. 17`, `godz. 17.30`) as `[hour, minute]`, or `null`.
 - **`clocksIn(text)`** gives every `H.MM` or `HH:MM` as `[hour, minute]`, in order, and skips what is not a time of day.
+- **`findDates(text, { today, tolerant })`** gives every date `dateSpanIn` reads, each as `{ start, end, index, length }` with the position in the text you passed (also with `tolerant: true`, which reads a corrected copy). The match includes a weekday written before the date. A date that does not exist is left out. Two dates in one line come out as two matches, in the order they stand:
+
+  ```ts
+  findDates('Środa, 9 grudnia 2026, godz. 18.30 oraz 12.12.2026', {
+    tolerant: true,
+  });
+  // [
+  //   { start: '2026-12-09', end: '2026-12-09', index: 0, length: 21 },
+  //   { start: '2026-12-12', end: '2026-12-12', index: 40, length: 10 },
+  // ]
+  ```
+
+- **`withoutDates(text, options)`** gives the text with every match of `findDates` cut out, so what is left (a place, a title) can be read on its own.
+- **`findClocks(text)`** is `clocksIn` with positions: `{ clock, index, length }` for each match.
 
 ## Development
 
