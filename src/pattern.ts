@@ -10,7 +10,7 @@ export interface Pattern {
 export const DOT = '\u{E000}';
 
 const STRICT_DOT = '[./]';
-const TOLERANT_DOT = String.raw`(?:[./]\s?|,)`;
+const TOLERANT_DOT = String.raw`(?:[./:]\s?|,)+`;
 const CLASS_OR_LETTER = /\[[^\]]*]|[óąćęłńśźż]/gi;
 
 export const loosen = (source: string) =>

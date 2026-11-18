@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { parseDate } from '@polish/parse';
 import { dateSpanIn } from '@polish/span';
 
 const tolerant = { tolerant: true };
@@ -109,8 +110,25 @@ describe('tolerant reading', () => {
       ['05-12-2026', '2026-12-05'],
       ['5-12-2026', '2026-12-05'],
       ['5/12.2026', '2026-12-05'],
+      ['02..08.2025', '2025-08-02'],
+      ['17,,07.2026', '2026-07-17'],
+      ['17.07..2026', '2026-07-17'],
+      ['5:12:2026', '2026-12-05'],
+      ['5.,12,.2026', '2026-12-05'],
     ])('reads %s', (text, date) => {
       expect(dateSpanIn(text, tolerant)).toEqual(day(date));
+    });
+
+    it('reads a date with a doubled separator beside a clock', () => {
+      expect(parseDate('02..08.2025 r. godz. 17.00', tolerant)).toEqual({
+        start: '2025-08-02',
+        end: '2025-08-02',
+        times: [[17, 0]],
+      });
+    });
+
+    it('leaves a clock with a doubled separator unread', () => {
+      expect(parseDate('o 19..00', tolerant).times).toEqual([]);
     });
 
     it('reads a range with a comma', () => {
@@ -142,6 +160,7 @@ describe('without the flag', () => {
     '17,07.2026',
     '5. 12. 2026',
     '05-12-2026',
+    '02..08.2025',
   ])('does not read %s', (text) => {
     expect(dateSpanIn(text)).toBeNull();
     expect(dateSpanIn(text, { tolerant: false })).toBeNull();
