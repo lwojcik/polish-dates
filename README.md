@@ -1,6 +1,6 @@
 # polish-dates
 
-![NPM Version](https://img.shields.io/npm/v/polish-dates)
+[![NPM Version](https://img.shields.io/npm/v/polish-dates)](https://www.npmjs.com/package/polish-dates)
 [![Build status](https://ci.appveyor.com/api/projects/status/s8sgan0csn6yk5bw/branch/main?svg=true)](https://ci.appveyor.com/project/lwojcik/polish-dates/branch/main)
 [![codecov](https://codecov.io/github/lwojcik/polish-dates/graph/badge.svg?token=4bpiOiXmBK)](https://codecov.io/github/lwojcik/polish-dates)
 
