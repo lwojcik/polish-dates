@@ -1,6 +1,6 @@
 {
   "name": "polish-dates",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Read dates and clock times written in Polish text: \"5 i 6 grudnia 2026\", \"23–27 listopada 2026\", \"17,07.2026\", \"godz. 17.30\".",
   "keywords": [
     "polish",
