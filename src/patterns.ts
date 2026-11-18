@@ -29,7 +29,7 @@ export const ROMAN = [
   'XII',
 ];
 
-export const DAY = String.raw`(?<![\d.])\d{1,2}(?!\d)`;
+export const DAY = String.raw`(?<![\d.:])\d{1,2}(?!\d)`;
 export const MONTH_NUMBER = String.raw`(?:0?[1-9]|1[0-2])(?!\d)`;
 export const NUMBER = String.raw`\d{1,2}(?!\d)`;
 export const WORD_YEAR = String.raw`\d{4}(?!\d)`;
@@ -68,13 +68,13 @@ export const WORD_DAYS = compile(
   String.raw`(?<days>${ITEM}(?:${LIST}${ITEM})*)\s+(?<m>${MONTH})\s+(?<y>${WORD_YEAR})`,
 );
 export const NUMERIC_ACROSS = compile(
-  `(?<lead>${LEAD})(?<d1>${DAY})${DOT}(?<m1>${NUMBER})(?:${DOT}(?<y1>${NUMERIC_YEAR}))?${RANGE}(?<mid>${LEAD})(?<d2>${DAY})${DOT}(?<m2>${NUMBER})${DOT}(?<y2>${NUMERIC_YEAR})`,
+  `(?<lead>${LEAD})(?<d1>${DAY})${DOT}(?<m1>${MONTH_NUMBER})(?:${DOT}(?<y1>${NUMERIC_YEAR}))?${RANGE}(?<mid>${LEAD})(?<d2>${DAY})${DOT}(?<m2>${MONTH_NUMBER})${DOT}(?<y2>${NUMERIC_YEAR})`,
 );
 export const NUMERIC_DAYS = compile(
-  `(?<days>${ITEM}(?:${RANGE}${ITEM})+)${DOT}(?<m>${NUMBER})${DOT}(?<y>${NUMERIC_YEAR})`,
+  `(?<days>${ITEM}(?:${RANGE}${ITEM})+)${DOT}(?<m>${MONTH_NUMBER})${DOT}(?<y>${NUMERIC_YEAR})`,
 );
 export const NUMERIC = compile(
-  `(?<lead>${LEAD})(?<d>${DAY})${DOT}(?<m>${NUMBER})${DOT}(?<y>${NUMERIC_YEAR})`,
+  `(?<lead>${LEAD})(?<d>${DAY})${DOT}(?<m>${MONTH_NUMBER})${DOT}(?<y>${NUMERIC_YEAR})`,
 );
 export const WORD_ACROSS_UNDATED = compile(
   String.raw`(?<lead>${LEAD})(?<d1>${DAY})\s+(?<m1>${MONTH})${RANGE}(?<mid>${LEAD})(?<d2>${DAY})\s+(?<m2>${MONTH})${RELATIVE}`,
