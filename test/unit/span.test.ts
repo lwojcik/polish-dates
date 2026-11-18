@@ -268,4 +268,192 @@ describe('dateSpanIn', () => {
       expect(dateSpanIn(text, {})).toBeNull();
     });
   });
+
+  describe('with a weekday beside a date', () => {
+    it.each([
+      ['pon., 7 grudnia 2026', '2026-12-07'],
+      ['pn. 7.12.2026', '2026-12-07'],
+      ['w poniedziałek 7 grudnia 2026', '2026-12-07'],
+      ['we wtorek 8 grudnia 2026', '2026-12-08'],
+      ['wt. 8.12.2026', '2026-12-08'],
+      ['w środę 9 grudnia 2026', '2026-12-09'],
+      ['śr. 9.12.2026', '2026-12-09'],
+      ['w czwartek, 10 grudnia 2026', '2026-12-10'],
+      ['czw. 10.12.2026', '2026-12-10'],
+      ['pt., 4 grudnia 2026', '2026-12-04'],
+      ['w piątek 4 grudnia 2026 r. o godz. 18', '2026-12-04'],
+      ['w sobotę, 5 grudnia 2026', '2026-12-05'],
+      ['sob. 5.12.2026', '2026-12-05'],
+      ['sb. 5.12.2026', '2026-12-05'],
+      ['w niedzielę 6 grudnia 2026', '2026-12-06'],
+      ['niedz. 6.12.2026', '2026-12-06'],
+      ['nd. 6.12.2026', '2026-12-06'],
+      ['Sobota 5 GRUDNIA 2026', '2026-12-05'],
+    ])('reads %s when the weekday fits', (text, day) => {
+      expect(dateSpanIn(text)).toEqual({ start: day, end: day });
+    });
+
+    it('gives null when the weekday does not fit the date', () => {
+      expect(dateSpanIn('w niedzielę 5 grudnia 2026')).toBeNull();
+      expect(dateSpanIn('pt. 5.12.2026')).toBeNull();
+      expect(dateSpanIn('wtorek 2026-12-05')).toBeNull();
+    });
+
+    it('does not take the start of another word for a weekday', () => {
+      expect(dateSpanIn('ul. Sobieskiego 6 grudnia 2026')).toEqual({
+        start: '2026-12-06',
+        end: '2026-12-06',
+      });
+      expect(dateSpanIn('Standard: 5 grudnia 2026')).toEqual({
+        start: '2026-12-05',
+        end: '2026-12-05',
+      });
+    });
+
+    it.each([
+      ['pt. 4 – nd. 6 grudnia 2026', '2026-12-04', '2026-12-06'],
+      ['pt. 4 - nd. 6 grudnia 2026', '2026-12-04', '2026-12-06'],
+      ['od piątku 4 do niedzieli 6 grudnia 2026', '2026-12-04', '2026-12-06'],
+      ['piątek–niedziela, 4–6 grudnia 2026', '2026-12-04', '2026-12-06'],
+      ['sob. 5.12 - nd. 6.12.2026', '2026-12-05', '2026-12-06'],
+      ['pt. 4 – nd. 6 grudnia', '2026-12-04', '2026-12-06'],
+    ])('reads %s as a range', (text, start, end) => {
+      expect(dateSpanIn(text, { today: '2026-11-18' })).toEqual({
+        start,
+        end,
+      });
+    });
+
+    it('gives null when a weekday of a range does not fit', () => {
+      expect(dateSpanIn('pt. 4 – pn. 6 grudnia 2026')).toBeNull();
+      expect(dateSpanIn('sob. 4 – nd. 6 grudnia 2026')).toBeNull();
+    });
+
+    it('picks the next year the weekday fits for a date without a year', () => {
+      const today = { today: '2026-11-18' };
+
+      expect(dateSpanIn('sobota 5 grudnia', today)).toEqual({
+        start: '2026-12-05',
+        end: '2026-12-05',
+      });
+      expect(dateSpanIn('niedziela 5.12', today)).toEqual({
+        start: '2027-12-05',
+        end: '2027-12-05',
+      });
+      expect(dateSpanIn('we wtorek 5 grudnia', today)).toEqual({
+        start: '2028-12-05',
+        end: '2028-12-05',
+      });
+    });
+  });
+
+  describe('with a day named by a word', () => {
+    const today = { today: '2026-11-18' };
+
+    it.each([
+      ['dziś', '2026-11-18'],
+      ['Dzisiaj', '2026-11-18'],
+      ['jutro', '2026-11-19'],
+      ['JUTRO', '2026-11-19'],
+      ['Koncert jutro o godz. 18:00', '2026-11-19'],
+      ['pojutrze', '2026-11-20'],
+      ['wczoraj', '2026-11-17'],
+      ['przedwczoraj', '2026-11-16'],
+      ['za 3 dni', '2026-11-21'],
+      ['za dwa dni', '2026-11-20'],
+      ['za tydzień', '2026-11-25'],
+      ['za 2 tygodnie', '2026-12-02'],
+      ['za 5 tygodni', '2026-12-23'],
+      ['3 dni temu', '2026-11-15'],
+      ['tydzień temu', '2026-11-11'],
+      ['dwa tygodnie temu', '2026-11-04'],
+    ])('reads %s', (text, day) => {
+      expect(dateSpanIn(text, today)).toEqual({ start: day, end: day });
+    });
+
+    it('gives the day across the new year and the leap day', () => {
+      expect(dateSpanIn('jutro', { today: '2026-12-31' })).toEqual({
+        start: '2027-01-01',
+        end: '2027-01-01',
+      });
+      expect(dateSpanIn('wczoraj', { today: '2028-03-01' })).toEqual({
+        start: '2028-02-29',
+        end: '2028-02-29',
+      });
+    });
+
+    it.each([
+      ['w piątek', '2026-11-20'],
+      ['w najbliższy piątek', '2026-11-20'],
+      ['w ten piątek', '2026-11-20'],
+      ['w czwartek', '2026-11-19'],
+      ['w niedzielę', '2026-11-22'],
+      ['w poniedziałek', '2026-11-23'],
+      ['w przyszły piątek', '2026-11-27'],
+      ['w zeszły piątek', '2026-11-13'],
+      ['w ubiegły piątek', '2026-11-13'],
+    ])('reads %s as a weekday near today', (text, day) => {
+      expect(dateSpanIn(text, today)).toEqual({ start: day, end: day });
+    });
+
+    it.each([
+      ['w ten weekend', '2026-11-21', '2026-11-22'],
+      ['w weekend', '2026-11-21', '2026-11-22'],
+      ['w przyszły weekend', '2026-11-28', '2026-11-29'],
+      ['w zeszły weekend', '2026-11-14', '2026-11-15'],
+      ['w sobotę i niedzielę', '2026-11-21', '2026-11-22'],
+      ['od piątku do niedzieli', '2026-11-20', '2026-11-22'],
+      ['od poniedziałku do piątku', '2026-11-23', '2026-11-27'],
+      ['od soboty do poniedziałku', '2026-11-21', '2026-11-23'],
+    ])('reads %s as a range', (text, start, end) => {
+      expect(dateSpanIn(text, today)).toEqual({ start, end });
+    });
+
+    it('takes the weekend that is on for a Saturday or a Sunday', () => {
+      ['2026-11-21', '2026-11-22'].forEach((day) =>
+        expect(dateSpanIn('w ten weekend', { today: day })).toEqual({
+          start: '2026-11-21',
+          end: '2026-11-22',
+        }),
+      );
+      expect(dateSpanIn('w przyszły weekend', { today: '2026-11-21' })).toEqual(
+        {
+          start: '2026-11-28',
+          end: '2026-11-29',
+        },
+      );
+    });
+
+    it('prefers a date written out over a word', () => {
+      expect(dateSpanIn('jutro, czyli 5 grudnia 2026', today)).toEqual({
+        start: '2026-12-05',
+        end: '2026-12-05',
+      });
+      expect(dateSpanIn('dziś, 19 listopada', today)).toEqual({
+        start: '2026-11-19',
+        end: '2026-11-19',
+      });
+    });
+
+    it('gives null without today or with a today that is not a date', () => {
+      [
+        'dziś',
+        'jutro',
+        'wczoraj',
+        'w piątek',
+        'w ten weekend',
+        'za tydzień',
+        '3 dni temu',
+      ].forEach((text) => {
+        expect(dateSpanIn(text)).toBeNull();
+        expect(dateSpanIn(text, { today: 'jutro' })).toBeNull();
+      });
+    });
+
+    it('does not take a part of another word for one of these', () => {
+      expect(dateSpanIn('Wczorajsza rozmowa', today)).toBeNull();
+      expect(dateSpanIn('Podjutrzenie', today)).toBeNull();
+      expect(dateSpanIn('Bezdzisiejszy', today)).toBeNull();
+    });
+  });
 });
