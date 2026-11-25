@@ -410,6 +410,23 @@ describe('dateSpanIn', () => {
       expect(dateSpanIn(text, today)).toEqual({ start, end });
     });
 
+    it.each([
+      ['w tym tygodniu', '2026-11-16', '2026-11-22'],
+      ['na ten tydzień', '2026-11-16', '2026-11-22'],
+      ['w przyszłym tygodniu', '2026-11-23', '2026-11-29'],
+      ['na przyszły tydzień', '2026-11-23', '2026-11-29'],
+      ['w zeszłym tygodniu', '2026-11-09', '2026-11-15'],
+    ])('reads %s as a week from Monday to Sunday', (text, start, end) => {
+      expect(dateSpanIn(text, today)).toEqual({ start, end });
+    });
+
+    it('keeps a Sunday in the week that ends with it', () => {
+      expect(dateSpanIn('w tym tygodniu', { today: '2026-11-22' })).toEqual({
+        start: '2026-11-16',
+        end: '2026-11-22',
+      });
+    });
+
     it('takes the weekend that is on for a Saturday or a Sunday', () => {
       ['2026-11-21', '2026-11-22'].forEach((day) =>
         expect(dateSpanIn('w ten weekend', { today: day })).toEqual({

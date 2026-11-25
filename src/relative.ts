@@ -85,6 +85,19 @@ const inWeek = ({
 const READERS: Reader[] = [
   {
     pattern: compile(
+      `${WORD_START}(?:w|we|na)\\s+(?<which>${WHICH})\\s+(?:tydzień|tygodniu)${WORD_END}`,
+    ),
+    read: ({ which }, today) => {
+      const start = addDays(
+        today,
+        shiftOf(which) * DAYS_PER_WEEK - dayOfWeek(today),
+      );
+
+      return { start, end: addDays(start, DAYS_PER_WEEK - 1) };
+    },
+  },
+  {
+    pattern: compile(
       `${WORD_START}(?:(?<which>${WHICH})\\s+)?weekend(?:u|zie)?${WORD_END}`,
     ),
     read: ({ which }, today) => {
