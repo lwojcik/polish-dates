@@ -24,4 +24,4 @@ Run test, typecheck and lint before finishing a change.
 - A new date form needs a unit test with a positive case and a near-miss that must stay `null`.
 - Anything added to the public API needs a line in `llms.txt` and a README entry. Lint forbids comments except `/** */` TSDoc in `src/`; keep TSDoc lines within 80 characters.
 - Commits follow Conventional Commits (commitlint enforces it); use `npm run commit`.
-- Releases go through `npm run release:prepare`; do not edit the version or changelog by hand.
+- Releases go through `npm run release:prepare`, which opens the version PR; do not edit the version or changelog by hand. After it merges, `npm run release` tags and creates the GitHub release, and pushing the tag triggers `.github/workflows/publish.yml`, which publishes to npm with provenance via trusted publishing (never publish from a laptop).

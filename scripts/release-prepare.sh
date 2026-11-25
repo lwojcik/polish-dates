@@ -28,4 +28,4 @@ git branch -m "release/v${version}"
 git push -u origin "release/v${version}"
 gh pr create --base main \
   --title "chore(release): ${version}" \
-  --body "Bumps the version to ${version}. After merging, run \`npm run release\` from an up-to-date \`main\` to tag, publish the GitHub release and publish to npm."
+  --body "Bumps the version to ${version}. After merging, run \`npm run release\` from an up-to-date \`main\` to tag and publish the GitHub release; the tag then triggers the npm publish workflow."
