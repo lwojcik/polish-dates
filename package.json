@@ -10,7 +10,13 @@
     "parser",
     "text",
     "nlp",
-    "pl"
+    "pl",
+    "date-extraction",
+    "ner",
+    "llm",
+    "ai-agents",
+    "dates-in-text",
+    "polski"
   ],
   "license": "MIT",
   "author": "Łukasz Wójcik",
@@ -25,7 +31,8 @@
     "node": ">=24"
   },
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -66,5 +73,6 @@
     "typescript": "6.0.3",
     "typescript-eslint": "^8.73.0",
     "vitest": "5.1.0"
-  }
+  },
+  "sideEffects": false
 }

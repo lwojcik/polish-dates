@@ -6,6 +6,10 @@
 
 Read dates and clock times written in Polish text, such as `5 i 6 grudnia 2026`, `23–27 listopada 2026`, `17,07.2026` or `godz. 17.30`. It has no dependencies and runs on Node 24 or newer.
 
+## For AI agents
+
+Machine-readable docs: [llms.txt](llms.txt) (also shipped in the npm package as `node_modules/polish-dates/llms.txt`) and [AGENTS.md](AGENTS.md) for working on this repo. The main rule: pass `today: 'YYYY-MM-DD'` whenever the text may omit the year or say `jutro`; the library never reads the clock and never throws.
+
 ## Install
 
 ```sh

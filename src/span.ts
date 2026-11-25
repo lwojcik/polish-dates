@@ -47,8 +47,14 @@ import {
 
 export type { DateSpan } from '@polish/types';
 
+/** Options shared by `parseDate`, `dateSpanIn`, `findDates`, `withoutDates`. */
 export interface DateSpanOptions {
+  /**
+   * Today as `YYYY-MM-DD`, for dates without a year and words like `jutro`.
+   * Never read from the system clock.
+   */
   today?: string;
+  /** Forgive typos, missing Polish letters and odd separators. */
   tolerant?: boolean;
 }
 
@@ -241,6 +247,17 @@ export const firstIn = (
     : relativeMatchIn(plain, { today: now.iso, isTolerant });
 };
 
+/**
+ * Finds the first day or range of days in a sentence.
+ *
+ * Gives `{ start, end }` as `YYYY-MM-DD` (the same day twice for one day),
+ * or `null`. Never throws and never guesses a missing year: pass `today`.
+ *
+ * @example
+ * dateSpanIn('5 i 6 grudnia 2026');
+ * // { start: '2026-12-05', end: '2026-12-06' }
+ * dateSpanIn('5 i 6 grudnia'); // null, no year and no `today`
+ */
 export const dateSpanIn = (
   text: string,
   { today, tolerant = false }: DateSpanOptions = {},
