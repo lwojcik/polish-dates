@@ -32,6 +32,10 @@ describe('tolerant reading', () => {
       expect(dateSpanIn('dzis', today)).toEqual(day('2026-11-18'));
       expect(dateSpanIn('w piatek', today)).toEqual(day('2026-11-20'));
       expect(dateSpanIn('w przyszly piatek', today)).toEqual(day('2026-11-27'));
+      expect(dateSpanIn('w przyszlym tygodniu', today)).toEqual({
+        start: '2026-11-23',
+        end: '2026-11-29',
+      });
       expect(dateSpanIn('za piec dni', today)).toEqual(day('2026-11-23'));
       expect(dateSpanIn('w zeszly weekend', today)).toEqual({
         start: '2026-11-14',
