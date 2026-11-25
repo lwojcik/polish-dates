@@ -24,6 +24,10 @@ const daysIn = ({ year, month }: Pick<DateOnOptions, 'month' | 'year'>) =>
 const pad = (value: number, length: number) =>
   String(value).padStart(length, '0');
 
+/**
+ * Formats a day as `YYYY-MM-DD`, or `null` when the day does not exist.
+ * Knows the leap years and uses no time zone.
+ */
 export const dateOn = ({ year, month, day }: DateOnOptions): string | null => {
   const isValid =
     Number.isSafeInteger(year) &&

@@ -2,6 +2,7 @@ import { type DateSpanOptions, firstIn, todayOf } from '@polish/span';
 import { plainOf } from '@polish/tolerance';
 import type { DateSpan } from '@polish/types';
 
+/** A date in a text: `text.slice(index, index + length)` is its words. */
 export interface DateMatch extends DateSpan {
   index: number;
   length: number;
@@ -42,6 +43,11 @@ const collect = (
   return collect(blanked, { search, found: [...found, ...match] });
 };
 
+/**
+ * Finds every date in the text, in order, each with its position.
+ * A weekday written before the date is part of the match, and a date that
+ * does not exist is left out.
+ */
 export const findDates = (
   text: string,
   { today, tolerant = false }: DateSpanOptions = {},
@@ -54,6 +60,7 @@ export const findDates = (
   }).toSorted((first, second) => first.index - second.index);
 };
 
+/** The text with every match of `findDates` cut out. */
 export const withoutDates = (text: string, options: DateSpanOptions = {}) =>
   findDates(text, options).reduceRight(
     (rest, { index, length }) =>

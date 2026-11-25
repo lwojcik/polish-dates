@@ -6,6 +6,7 @@ import { NOT_AFTER_MONEY, NOT_MONEY } from '@polish/money';
 import { dateSpanIn, type DateSpanOptions } from '@polish/span';
 import { ZONE } from '@polish/zones';
 
+/** The answer of `parseDate`. For a single day `start` equals `end`. */
 export interface ParsedDate {
   start: string | null;
   end: string | null;
@@ -55,6 +56,18 @@ const clocksOf = (token: string): Clock[] => {
   return isTimeOfDay(token) ? clocks : [];
 };
 
+/**
+ * Reads the date (or range of dates) and the clock times in Polish text.
+ *
+ * Never throws: with nothing found, `start` and `end` are `null` and
+ * `times` is `[]`. A date without a year, and words such as `jutro` or
+ * `w piątek`, are read only when `options.today` (`YYYY-MM-DD`) is given.
+ * `options.tolerant` forgives typos and missing Polish letters.
+ *
+ * @example
+ * parseDate('23–27 listopada 2026, godz. 9.00 – 17:30');
+ * // { start: '2026-11-23', end: '2026-11-27', times: [[9, 0], [17, 30]] }
+ */
 export const parseDate = (
   text: string,
   options: DateSpanOptions = {},

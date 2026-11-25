@@ -1,0 +1,42 @@
+# polish-dates
+
+> Read dates and clock times written in Polish text (`5 i 6 grudnia 2026`, `23–27 listopada 2026`, `jutro o godz. 18:30`) into ISO `YYYY-MM-DD` strings and `[hour, minute]` pairs. Zero dependencies, ESM only, Node 24+, TypeScript types included. Pure functions: nothing throws, nothing reads the system clock.
+
+## Quick start
+
+```ts
+import { parseDate } from 'polish-dates';
+
+parseDate('W dniach 23–27 listopada 2026 r., godz. 9.00 – 17:30');
+// { start: '2026-11-23', end: '2026-11-27', times: [[9, 0], [17, 30]] }
+
+parseDate('jutro o godz. 18:30', { today: '2026-11-18' });
+// { start: '2026-11-19', end: '2026-11-19', times: [[18, 30]] }
+
+parseDate('wkrótce'); // { start: null, end: null, times: [] }
+```
+
+## Rules an agent must know
+
+- Always pass `today: 'YYYY-MM-DD'` (the caller's date) when the text may lack a year or use `jutro`, `w piątek`, `za 2 tygodnie`. Without it those give `null`. The library never reads the clock.
+- A single day has `start === end`. No date means `start: null, end: null`; no clock means `times: []`. There are no exceptions to catch.
+- `tolerant: true` forgives typos, missing Polish letters (`sroda`, `wrzesnia`) and odd separators (`17,07.2026`). Off by default, so a `null` on messy input may succeed with it.
+- A weekday that contradicts its date (`w niedzielę 5 grudnia 2026`, a Saturday) gives `null`. A non-existent day (`30 lutego`) gives `null`.
+- Dates are `YYYY-MM-DD` strings, not `Date` objects; there is no time zone. Times are 24-hour `[hour, minute]`.
+- Ranges are inclusive. A week is Monday to Sunday. A whole month is its first to last day.
+- A comma list cannot be told from other text: `Sala 3, 5 grudnia 2026` reads as `3–5 grudnia`.
+
+## API
+
+- `parseDate(text, { today?, tolerant? })` → `{ start, end, times }`. Start here.
+- `dateSpanIn(text, options)` → `{ start, end } | null`. First date or range only.
+- `findDates(text, options)` → `{ start, end, index, length }[]`. Every date, with positions.
+- `withoutDates(text, options)` → text with the dates cut out.
+- `clocksIn(text)` → `[h, m][]`; `findClocks(text)` → with positions; `clockAfterHour(text)` → `[h, m] | null`.
+- `dateOn({ year, month, day })` → `'YYYY-MM-DD' | null`.
+- `monthNumber(name)` → 1–12, or 0 (genitive months only); `POLISH_MONTHS`, `MONTH_PATTERN`.
+
+## Docs
+
+- [README](https://github.com/lwojcik/polish-dates#readme): every supported form, with examples
+- [Source](https://github.com/lwojcik/polish-dates/tree/main/src)
